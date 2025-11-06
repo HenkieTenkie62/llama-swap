@@ -2,19 +2,16 @@ name: Sync upstream (merge)
 
 on:
   schedule:
-    - cron: '0 3 * * 1'        # every sunday 03:00
-  workflow_dispatch:           # manual button
+    - cron: '0 3 * * 1'        # 03:00 UTC every Monday
+  workflow_dispatch:
 
 permissions:
   contents: write          # push commits
-  pull-requests: write
+  pull-requests: read      # (not used, but keeps Actions happy)
 
 jobs:
   merge:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write          # allow push
-      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,36 +28,14 @@ jobs:
           git remote add upstream https://github.com/mostlygeek/llama-swap.git
           git fetch upstream
 
-      - name: Merge upstream (fast-forward or merge commit)
-        id: merge
+      - name: Merge upstream
         run: |
-          set -e
-          git config user.name  'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git fetch upstream
-          git fetch origin
-
-          # Delete any leftover branch on GitHub (ignore error if it doesn't exist)
-          git push -d origin auto-merge-upstream 2>/dev/null || true
-
-          # Try fast-forward first
+          # Fast-forward only: succeeds if your fork is simply behind
           if git merge --ff-only upstream/main; then
-              echo "result=ff" >> $GITHUB_OUTPUT
+              git push origin main
+              echo "✅ Fast-forward merge completed."
           else
-              echo "result=conflict" >> $GITHUB_OUTPUT
-              git checkout -B auto-merge-upstream   # create/reset branch
-              git merge --no-edit upstream/main || true   # keep conflicts staged
-              git add .
-              git commit -m "WIP: merge upstream (conflicts left)"
-              git push -f -u origin auto-merge-upstream   # force-push clean branch
+              echo "::error::Conflict detected – please resolve locally."
+              echo "::error::Run:  git fetch upstream && git merge upstream/main"
+              exit 1   # fail the job so you get a notification
           fi
-
-      - name: Create PR only if conflict branch exists
-        if: steps.merge.outputs.result == 'conflict'
-        uses: repo-sync/pull-request@v2
-        with:
-          source_branch: auto-merge-upstream
-          destination_branch: main
-          github_token: ${{ secrets.PR_TOKEN }}
-          pr_title: "Resolve upstream merge conflicts"
-          pr_body: "Please finish resolving the conflicts inside this PR."       

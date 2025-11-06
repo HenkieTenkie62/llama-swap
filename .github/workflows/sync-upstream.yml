@@ -28,14 +28,16 @@ jobs:
           git remote add upstream https://github.com/mostlygeek/llama-swap.git
           git fetch upstream
 
-      - name: Merge upstream
+      - name: Merge upstream (automatic merge commit)
         run: |
-          # Fast-forward only: succeeds if your fork is simply behind
-          if git merge --ff-only upstream/main; then
+          set -e
+          git fetch upstream
+          # create a merge commit; || true keeps the runner alive on conflict
+          if git merge --no-edit upstream/main; then
               git push origin main
-              echo "✅ Fast-forward merge completed."
+              echo "✅ Merge commit created and pushed."
           else
-              echo "::error::Conflict detected – please resolve locally."
-              echo "::error::Run:  git fetch upstream && git merge upstream/main"
-              exit 1   # fail the job so you get a notification
+              echo "::error::Automatic merge failed – conflict must be resolved locally."
+              echo "::error::Clone repo, run:  git fetch upstream && git merge upstream/main"
+              exit 1
           fi

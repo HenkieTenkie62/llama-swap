@@ -509,24 +509,24 @@ func (pm *ProxyManager) proxyToUpstream(c *gin.Context) {
 }
 
 func (pm *ProxyManager) proxyASRHandler(c *gin.Context) {
-    requestedModel := "asr"
+   	requestedModel := "asr"
 
-    processGroup, _, err := pm.swapProcessGroup(requestedModel)
-    if err != nil {
-        pm.sendErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("error swapping process group: %s", err.Error()))
-        return
-    }
+   	processGroup, realModelName, err := pm.swapProcessGroup(requestedModel)
+   	if err != nil {
+   		pm.sendErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("error swapping process group: %s", err.Error()))
+   		return
+   	}
 
-    // Always route to /asr on the backend
-    c.Request.URL.Path = "/asr"
+   	// Always route to /asr on the backend
+   	c.Request.URL.Path = "/asr"
 
-    processGroup.ProxyRequest(requestedModel, c.Writer, c.Request)
+   	processGroup.ProxyRequest(realModelName, c.Writer, c.Request)
 }
 
 func (pm *ProxyManager) proxyDetectLanguageHandler(c *gin.Context) {
     requestedModel := "asr"
 
-    processGroup, _, err := pm.swapProcessGroup(requestedModel)
+    processGroup, realModelName, err := pm.swapProcessGroup(requestedModel)
     if err != nil {
         pm.sendErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("error swapping process group: %s", err.Error()))
         return
@@ -535,37 +535,36 @@ func (pm *ProxyManager) proxyDetectLanguageHandler(c *gin.Context) {
     // Always route to /detect-language on the backend
     c.Request.URL.Path = "/detect-language"
 
-    processGroup.ProxyRequest(requestedModel, c.Writer, c.Request)
+    processGroup.ProxyRequest(realModelName, c.Writer, c.Request)
 }
 
 func (pm *ProxyManager) proxyMarkerHandler(c *gin.Context) {
-    requestedModel := "marker"
+   	requestedModel := "marker"
 
-    processGroup, _, err := pm.swapProcessGroup(requestedModel)
-    if err != nil {
-        pm.sendErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("error swapping process group: %s", err.Error()))
-        return
-    }
+   	processGroup, realModelName, err := pm.swapProcessGroup(requestedModel)
+   	if err != nil {
+   		pm.sendErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("error swapping process group: %s", err.Error()))
+   		return
+   	}
 
-    // Always route to /marker on the backend
-    c.Request.URL.Path = "/marker"
-
-    processGroup.ProxyRequest(requestedModel, c.Writer, c.Request)
+   	// Always route to /marker on the backend
+   	c.Request.URL.Path = "/marker"
+   	processGroup.ProxyRequest(realModelName, c.Writer, c.Request)
 }
 
 func (pm *ProxyManager) proxyMarkerUpHandler(c *gin.Context) {
-    requestedModel := "marker"
+    	requestedModel := "marker"
 
-    processGroup, _, err := pm.swapProcessGroup(requestedModel)
-    if err != nil {
-        pm.sendErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("error swapping process group: %s", err.Error()))
-        return
-    }
+    	processGroup, realModelName, err := pm.swapProcessGroup(requestedModel)
+    	if err != nil {
+    		pm.sendErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("error swapping process group: %s", err.Error()))
+    		return
+    	}
 
-    // Always route to /marker/upload on the backend
-    c.Request.URL.Path = "/marker/upload"
+    	// Always route to /marker/upload on the backend
+    	c.Request.URL.Path = "/marker/upload"
 
-    processGroup.ProxyRequest(requestedModel, c.Writer, c.Request)
+    	processGroup.ProxyRequest(realModelName, c.Writer, c.Request)
 }
 
 func (pm *ProxyManager) proxyOAIHandler(c *gin.Context) {

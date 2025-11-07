@@ -2,14 +2,16 @@ name: Sync upstream (merge)
 
 on:
   schedule:
-    - cron: '0 * * * *'        # every hour
-  workflow_dispatch:           # manual button
+    - cron: '0 3 * * 1'        # 03:00 UTC every Monday
+  workflow_dispatch:
+
+permissions:
+  contents: write          # push commits
+  pull-requests: read      # (not used, but keeps Actions happy)
 
 jobs:
   merge:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write          # allow push
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,11 +28,16 @@ jobs:
           git remote add upstream https://github.com/mostlygeek/llama-swap.git
           git fetch upstream
 
-      - name: Merge or PR on conflict
-        uses: repo-sync/pull-request@v2
-        with:
-          source_branch: "auto-merge-upstream"
-          destination_branch: "main"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          pr_title: "Merge upstream changes"
-          pr_body: "Automated merge failed; please resolve conflicts."
+      - name: Merge upstream (automatic merge commit)
+        run: |
+          set -e
+          git fetch upstream
+          # create a merge commit; || true keeps the runner alive on conflict
+          if git merge --no-edit upstream/main; then
+              git push origin main
+              echo "✅ Merge commit created and pushed."
+          else
+              echo "::error::Automatic merge failed – conflict must be resolved locally."
+              echo "::error::Clone repo, run:  git fetch upstream && git merge upstream/main"
+              exit 1
+          fi

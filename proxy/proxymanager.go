@@ -446,6 +446,10 @@ func (pm *ProxyManager) setupGinEngine() {
 	// add API handler functions
 	addApiHandlers(pm)
 
+	// ---- CUSTOM EXTENSION POINT ----
+	pm.setupCustomEndpoints()
+	// --------------------------------
+
 	// Disable console color for testing
 	gin.DisableConsoleColor()
 }

@@ -92,7 +92,7 @@ fi
 DOCKER_BUILDKIT="${DOCKER_BUILDKIT:-1}"
 
 # Single unified Dockerfile, backend selected via build arg
-DOCKERFILE="Dockerfile"
+DOCKERFILE="unified/Dockerfile"
 if [[ "$BACKEND" == "vulkan" ]]; then
     echo "Building for: Vulkan (AMD GPUs and compatible hardware)"
 else
